@@ -1,0 +1,46 @@
+.global fibonacci
+
+.text
+
+fibonacci:
+
+zero:
+    bgt     $a0 0   base_case           # Skip this if input greater than zero
+    li      $v0 1
+    jr      $ra
+
+base_case:
+    bgt     $a0 1   recursive_case      # If n>1, recurse!
+    move    $v0 $a0                     # Move input to return register
+    jr      $ra                         # Return
+
+recursive_case:
+    # As callee, save return address and saved registers
+    addi    $sp $sp -12                 # Adjust stack for pushing 3 items
+    sw      $ra    8($sp)               # Push return address to stack
+    sw      $s0    4($sp)               # Push $s0 to stack
+    sw      $s1    0($sp)               # Push $s1 to stack
+
+    # As caller, save arguments
+    addi    $s0 $a0 -1                  # Store n-1 in $s0
+
+    # fib(n-1)
+    move    $a0 $s0                     # Set argument to n-1
+    jal     fibonacci                   # fib(n-1)
+    move    $s1 $v0                     # Store returned value in $s0
+
+    # fib(n-2)
+    addi    $s0 $s0 -1                  # Calculate n-2 in $s0
+    move    $a0 $s0                     # Set argument to n-2
+    jal     fibonacci                   # fib(n-2)
+    
+    # Set return value
+    add     $v0 $v0 $s1                 # Store returned value in $t0
+
+    # Pop registers from the stack
+    lw      $s1    0($sp)               # Pop $s1 off stack
+    lw      $s0    4($sp)               # Pop $s0 off stack
+    lw      $ra    8($sp)               # Pop return address off stack
+    addi    $sp $sp 12                  # Adjust stack for popping 3 items off
+
+    jr      $ra                         # Return
